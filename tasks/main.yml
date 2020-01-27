@@ -1,0 +1,9 @@
+---
+
+- import_tasks: partition_disks.yml
+  when: disk_setup is defined
+  tags: disks
+
+- import_tasks: filesystems.yml
+  when: fs_setup is defined and fs_setup|length > 0
+  tags: fs

@@ -1,0 +1,87 @@
+---
+
+# Print extra debug information.
+debug: false
+
+# Global defaults for fs_setup. Can be overriden on a per filesystem
+# basis.
+
+# Default filesystem type to create.
+fs_default_filesystem: 'ext4'
+
+# Overwrite existing filesystems. Use with caution.
+fs_replace_fs: false
+
+# Default behavior is to mount the created filesystems.
+fs_mount_state: mounted
+
+# Default mount opts and passno.
+fs_mount_opts: "defaults"
+fs_mount_passno: 0
+
+# Default filesystem owner/group/mode.
+fs_owner: root
+fs_group: root
+fs_mode: "0755"
+
+# cloud-init format extended with mount/perms options. see
+# https://cloudinit.readthedocs.io/en/latest/topics/examples.html#create-partitions-and-filesystems.
+# added mount options are:
+#   - state (defaults to 'fs_mount_state')
+#   - owner (defaults to 'fs_owner')
+#   - group (defaults to 'fs_group')
+#   - path (path where to mount the filesystem which are always mounted by label)
+#   - mount_opts (defaults to 'fs_mount_opts')
+#   - mount_passno (defaults to 'fs_mount_passno')
+#   - mode (defaults to 'fs_mode')
+
+fs_setup:
+  - label: hdfs-data01
+    filesystem: 'xfs'
+    device: '/dev/vdb1'
+    path: /opt/data01
+    mount_opts: noatime
+    mount_passno: 0
+    mode: '0755'
+
+  - label: hdfs-data02
+    filesystem: 'xfs'
+    device: '/dev/vdb2'
+    path: /opt/data02
+    mount_opts: noatime
+
+  - label: hdfs-data03
+    filesystem: 'xfs'
+    device: '/dev/vdb3'
+    path: /opt/data03
+    mount_opts: noatime
+
+  - label: hdfs-data04
+    filesystem: 'xfs'
+    device: '/dev/vdb4'
+    path: /opt/data04
+    mount_opts: noatime
+
+# Global defaults for disk_setup. Can be overriden on a per partition basis.
+
+# Print current partition information.
+disk_state: info
+
+# Default 'table_type'.
+disk_table_type: 'gpt'
+
+# cloud-init format partionning scheme.
+# Notes:
+#   - table_type is consumed by the parted module 'label' arg.
+#       => supported values: [ aix, amiga, bsd, dvh, gpt, loop, mac, msdos, pc98, sun ]
+#       => defaults to gpt''
+disk_setup:
+   vdb:
+       # table_type: 'gpt'
+       state: present
+       layout:
+           - [0, 25]
+           - [25, 50]
+           - [50, 75]
+           - [75, 100]
+       # overwrite: false

@@ -1,0 +1,10 @@
+---
+
+- name: unmount filesystems
+  mount:
+    path: "{{item['path']}}"
+    # mount by label
+    src: "LABEL={{item['label']}}"
+    state: "unmounted"
+  loop: "{{fs_setup}}"
+  tags: fs

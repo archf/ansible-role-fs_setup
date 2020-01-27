@@ -1,0 +1,62 @@
+---
+
+- debug: var=disk_device
+  when: debug|bool
+  check_mode: true
+  tags: always
+
+# - debug: var=item
+#   with_indexed_items:
+#     - "{{disk_device['value']['layout']}}"
+
+# or same as above but 1 based index
+# - debug: var=item
+#   with_items:
+#     - "{{range(1,disk_device['value']['layout']|length + 1)|zip(disk_device['value']['layout'])|list}}"
+
+- import_tasks: filesystems_unmount.yml
+  when: disk_state == 'absent'
+  tags: disks
+
+# ansible 2.3
+- name: partitions '/dev/{{disk_device['key']}}'
+  parted:
+    device: "/dev/{{disk_device['key']}}"
+    label: "{{disk_device['value']['table_type']|default(disk_table_type)}}"
+    unit: '%'
+    number: "{{item[0] + 1}}"
+    part_start: "{{item[1][0]}}%"
+    part_end: "{{item[1][1]}}%"
+    state: "{{disk_device['value']['state']|default(disk_state)}}"
+    flags: [ lvm ]
+    # align: 'optimal'
+  with_indexed_items:
+      - "{{disk_device['value']['layout']}}"
+  tags: disks
+
+# # ansible 2.8+ only
+# - name: partitions '/dev/{{disk_device['key']}}'
+#   parted:
+#     device: "/dev/{{disk_device['key']}}"
+#     label: "{{disk_device['value']['table_type']|default('gpt')}}"
+#     unit: '%'
+#     number: "{{ansible_loop['index']}}"
+#     part_start: "{{item[0]}}%"
+#     part_end: "{{item[1]}}%"
+#     state: "{{disk_device['value']['state']|default(disk_state)}}"
+#     flags: [ lvm ]
+#     # align: 'optimal'
+#   # with_indexed_items: "{{disk_device['value']['layout']}}"
+#   # use with_together with a range?
+#   loop: "{{disk_device['value']['layout']}}"
+#   loop_control:
+#     # new in version 2.5
+#     # index_var: partition_nb
+#     # new in 2.8, enables ansible_loop.index (current iteration 1 indexed)
+#     extended: yes
+#   tags: disk
+
+# - name: run sync command
+#   command: sync
+# - wait_for:
+#     timout: 5

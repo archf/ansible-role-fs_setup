@@ -1,0 +1,40 @@
+---
+
+# create and mount filesystems
+# set mountpoints permissions
+
+# unmount for when we are overwriting a filesystem
+- import_tasks: filesystems_unmount.yml
+  when: fs_replace_fs_overwrite|bool
+  tags: always
+
+- name: create filesystems
+  filesystem:
+    fstype: "{{item['filesystem']|default(fs_default_filesystem)}}"
+    device: "{{item['device']}}"
+    opts: "-L {{item['label']}}"
+    force: "{{fs_replace_fs|bool}}"
+  loop: "{{fs_setup}}"
+  tags: fs
+
+- name: mount filesystems
+  mount:
+    path: "{{item['path']}}"
+    # mount by label
+    src: "LABEL={{item['label']}}"
+    fstype: "{{item['filesystem']}}"
+    opts: "{{item['mount_opts']|default(fs_mount_opts)}}"
+    passno: "{{item['mount_passno']|default(fs_mount_passno)}}"
+    state: "{{item['mount_state']|default(fs_mount_state)}}"
+  loop: "{{fs_setup}}"
+  tags: fs
+
+- name: set mountpoints permissions
+  file:
+    path: "{{item['path']}}"
+    state: directory
+    owner: "{{item['owner']|default(fs_owner)}}"
+    group: "{{item['group']|default(fs_group)}}"
+    mode: "{{item['mode']|default(fs_mode)}}"
+  loop: "{{fs_setup}}"
+  tags: fs

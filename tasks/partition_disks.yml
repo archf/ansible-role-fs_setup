@@ -1,0 +1,13 @@
+---
+
+- debug: var=item
+  loop: "{{query('dict', disk_setup)}}"
+  when: debug|bool
+  check_mode: true
+  tags: always
+
+- include_tasks: partition_disk.yml
+  loop: "{{query('dict', disk_setup)}}"
+  loop_control:
+    loop_var: disk_device
+  tags: disks
